@@ -43,60 +43,95 @@ const wait = (duration) => new Promise((resolve) => {
   window.setTimeout(resolve, duration);
 });
 
-const buildCoffeeScene = (project) => {
+const buildCoffeeScene = (project, cupRect) => {
   const scene = document.createElement("div");
   const stage = document.createElement("div");
   const machine = document.createElement("img");
   const streamMask = document.createElement("div");
-  const stream = document.createElement("img");
+  const streams = Array.from({ length: 15 }, () => document.createElement("img"));
   const cup = document.createElement("img");
+  const cover = document.createElement("img");
   const holderWrap = document.createElement("div");
   const holder = document.createElement("img");
   const engraving = document.createElement("div");
   const title = document.createElement("strong");
   const desc = document.createElement("span");
+  const finale = document.createElement("div");
+  const finaleText = document.createElement("p");
+  const confetti = document.createElement("div");
 
   scene.className = "coffee-scene";
   stage.className = "coffee-stage";
+  if (cupRect) {
+    stage.style.setProperty("--scene-cup-origin-left", `${cupRect.left + (cupRect.width / 2)}px`);
+    stage.style.setProperty("--scene-cup-origin-top", `${cupRect.top + (cupRect.height / 2)}px`);
+    stage.style.setProperty("--scene-cup-origin-width", `${cupRect.width}px`);
+  }
   machine.className = "coffee-machine";
   streamMask.className = "coffee-stream-mask";
-  stream.className = "coffee-stream";
+  streams.forEach((stream, index) => {
+    stream.className = "coffee-stream";
+    stream.style.setProperty("--stream-index", index);
+    stream.style.setProperty("--stream-delay", `${index * 500}ms`);
+  });
   cup.className = "coffee-cup";
+  cover.className = "coffee-cover";
   holderWrap.className = "coffee-holder-wrap";
   holder.className = "coffee-holder";
   engraving.className = "coffee-engraving";
+  finale.className = "coffee-finale";
+  finaleText.className = "coffee-finale-text";
+  confetti.className = "coffee-confetti";
 
   machine.src = "./assets/img/shot_machine.png";
   machine.alt = "";
   machine.setAttribute("aria-hidden", "true");
-  stream.src = "./assets/img/coffee.png";
-  stream.alt = "";
-  stream.setAttribute("aria-hidden", "true");
+  streams.forEach((stream) => {
+    stream.src = "./assets/img/coffee.png";
+    stream.alt = "";
+    stream.setAttribute("aria-hidden", "true");
+  });
   cup.src = "./assets/img/cup.png";
   cup.alt = "";
   cup.setAttribute("aria-hidden", "true");
+  cover.src = "./assets/img/cover.png";
+  cover.alt = "";
+  cover.setAttribute("aria-hidden", "true");
   holder.src = "./assets/img/holder.png";
   holder.alt = "";
   holder.setAttribute("aria-hidden", "true");
 
   title.textContent = project.title;
   desc.textContent = truncate(project.desc, 80);
+  finaleText.textContent = "Bon App\u00e9tit";
+  Array.from({ length: 28 }, (_, index) => {
+    const piece = document.createElement("span");
+    piece.style.setProperty("--confetti-index", index);
+    piece.style.setProperty("--confetti-x", `${((index * 37) % 220) - 110}px`);
+    piece.style.setProperty("--confetti-y", `${-60 - ((index * 29) % 130)}px`);
+    piece.style.setProperty("--confetti-rotate", `${(index * 47) % 180}deg`);
+    piece.style.setProperty("--confetti-delay", `${(index % 7) * 55}ms`);
+    piece.style.setProperty("--confetti-hue", (index * 41 + 8) % 360);
+    confetti.append(piece);
+  });
   engraving.append(title, desc);
   holderWrap.append(holder, engraving);
-  streamMask.append(stream);
-  stage.append(machine, streamMask, cup, holderWrap);
+  streamMask.append(...streams);
+  finale.append(confetti, finaleText);
+  stage.append(machine, streamMask, cup, holderWrap, cover, finale);
   scene.append(stage);
 
   return scene;
 };
 
-const runCoffeeTransition = async (project, url) => {
+const runCoffeeTransition = async (project, url, card) => {
   if (isCoffeeTransitioning || !hasUrl(url)) {
     return;
   }
 
   isCoffeeTransitioning = true;
-  const scene = buildCoffeeScene(project);
+  const cupRect = card?.querySelector(".cup-image")?.getBoundingClientRect();
+  const scene = buildCoffeeScene(project, cupRect);
   document.body.appendChild(scene);
   document.body.classList.add("is-coffee-transitioning");
 
@@ -108,9 +143,13 @@ const runCoffeeTransition = async (project, url) => {
   scene.classList.add("is-machine-ready");
   await wait(1350);
   scene.classList.add("is-pouring");
-  await wait(3200);
+  await wait(10200);
   scene.classList.add("is-finished");
-  await wait(1250);
+  await wait(520);
+  scene.classList.add("is-covered");
+  await wait(980);
+  scene.classList.add("is-celebrating");
+  await wait(1550);
   window.location.href = url;
 };
 
@@ -313,7 +352,7 @@ const createCupCard = (project, index) => {
 
       if (link.classList.contains("cup-link-coffee")) {
         event.preventDefault();
-        runCoffeeTransition(project, link.href);
+        runCoffeeTransition(project, link.href, card);
       }
     });
   });

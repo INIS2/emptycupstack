@@ -406,7 +406,7 @@ body {
 
 .is-coffee-transitioning .page-shell {
   opacity: 0;
-  transition: opacity 260ms ease;
+  transition: opacity 820ms ease;
   pointer-events: none;
 }
 
@@ -417,13 +417,22 @@ body {
   display: grid;
   place-items: center;
   overflow: hidden;
-  background: radial-gradient(circle at center, rgba(247, 249, 245, 0.96), rgba(217, 227, 221, 0.98));
-  opacity: 0;
+  background: transparent;
+  opacity: 1;
   pointer-events: none;
-  transition: opacity 320ms ease;
 }
 
-.coffee-scene.is-ready {
+.coffee-scene::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: radial-gradient(circle at center, rgba(247, 249, 245, 0.96), rgba(217, 227, 221, 0.98));
+  opacity: 0;
+  transition: opacity 820ms ease;
+}
+
+.coffee-scene.is-ready::before {
   opacity: 1;
 }
 
@@ -431,17 +440,30 @@ body {
   --scene-cup-width: clamp(180px, 25svh, 280px);
   --scene-cup-ratio: 0.806;
   --scene-cup-height: calc(var(--scene-cup-width) / var(--scene-cup-ratio));
+  --scene-cup-origin-left: 50%;
+  --scene-cup-origin-top: var(--scene-cup-start-top);
+  --scene-cup-origin-width: var(--scene-cup-width);
+  --scene-cup-start-left: 50%;
   --scene-cup-start-top: 32%;
+  --scene-cup-start-width: var(--scene-cup-width);
   --scene-cup-seat-top: 64%;
+  --scene-cup-top-edge: calc(var(--scene-cup-seat-top) - (var(--scene-cup-height) / 2));
+  --scene-cup-bottom-edge: calc(var(--scene-cup-seat-top) + (var(--scene-cup-height) / 2));
+  --scene-cover-width: var(--scene-cup-width);
+  --scene-cover-height: calc(var(--scene-cover-width) * 154 / 753);
+  --scene-cover-overlap: calc(var(--scene-cover-height) * 0.33);
+  --scene-cover-seat-top: calc(var(--scene-cup-top-edge) - (var(--scene-cover-height) / 2) + var(--scene-cover-overlap));
   --scene-holder-width: calc(var(--scene-cup-width) * 0.95);
   --scene-holder-height: calc(var(--scene-holder-width) * 253 / 338);
   --scene-holder-start-top: 70%;
   --scene-holder-seat-top: calc(var(--scene-cup-seat-top) + (var(--scene-cup-height) / 6) - (var(--scene-holder-height) / 2));
+  --scene-finale-top: calc(var(--scene-cup-bottom-edge) + clamp(30px, 5svh, 62px));
   --scene-machine-width: clamp(360px, 50svh, 580px);
   --scene-machine-top: 50%;
-  --scene-stream-top: calc(var(--scene-machine-top) - 9svh);
+  --scene-stream-top: calc(var(--scene-machine-top) - 9.5svh);
   --scene-stream-bottom: calc(var(--scene-cup-seat-top) + (var(--scene-cup-height) / 2));
   position: relative;
+  z-index: 1;
   width: 100vw;
   height: 100svh;
 }
@@ -449,8 +471,10 @@ body {
 .coffee-machine,
 .coffee-stream,
 .coffee-cup,
+.coffee-cover,
 .coffee-holder,
-.coffee-engraving {
+.coffee-engraving,
+.coffee-finale {
   user-select: none;
   pointer-events: none;
 }
@@ -483,7 +507,7 @@ body {
   left: 50%;
   top: var(--scene-stream-top);
   z-index: 2;
-  width: clamp(26px, 4svh, 42px);
+  width: clamp(68px, 10.5svh, 110px);
   height: calc(var(--scene-stream-bottom) - var(--scene-stream-top));
   overflow: hidden;
   transform: translateX(-50%);
@@ -498,9 +522,10 @@ body {
   width: 100%;
   height: 122%;
   object-fit: fill;
+  z-index: calc(var(--stream-index) + 1);
   transform: translateX(-50%) translateY(-100%) scaleY(0.25);
   transform-origin: top center;
-  transition: transform 3200ms linear;
+  transition: transform 3200ms linear var(--stream-delay);
 }
 
 .coffee-scene.is-pouring .coffee-stream-mask {
@@ -518,35 +543,40 @@ body {
 
 .coffee-cup {
   position: absolute;
-  left: 50%;
-  top: var(--scene-cup-start-top);
+  left: var(--scene-cup-origin-left);
+  top: var(--scene-cup-origin-top);
   z-index: 3;
-  width: var(--scene-cup-width);
+  width: var(--scene-cup-origin-width);
   transform: translate(-50%, -50%) scale(1);
-  opacity: 0;
+  opacity: 1;
   object-fit: contain;
-  transition: top 1120ms cubic-bezier(0.22, 1, 0.36, 1), transform 1120ms cubic-bezier(0.22, 1, 0.36, 1), opacity 460ms ease;
+  transition: left 1120ms cubic-bezier(0.22, 1, 0.36, 1), top 1120ms cubic-bezier(0.22, 1, 0.36, 1), width 1120ms cubic-bezier(0.22, 1, 0.36, 1), transform 1120ms cubic-bezier(0.22, 1, 0.36, 1), opacity 460ms ease;
 }
 
 .coffee-scene.is-ready .coffee-cup {
+  left: var(--scene-cup-start-left);
+  top: var(--scene-cup-start-top);
+  width: var(--scene-cup-start-width);
   opacity: 1;
 }
 
 .coffee-scene.is-seated .coffee-cup {
+  left: 50%;
   top: var(--scene-cup-seat-top);
+  width: var(--scene-cup-width);
   transform: translate(-50%, -50%) scale(1.04);
 }
 
 .coffee-holder-wrap {
   position: absolute;
   left: 50%;
-  top: var(--scene-holder-start-top);
+  top: var(--scene-holder-seat-top);
   z-index: 4;
   width: var(--scene-holder-width);
   aspect-ratio: 338 / 253;
-  transform: translate(-50%, -50%) scale(0.92);
+  transform: translate(-50%, -42%) scale(0.98);
   opacity: 0;
-  transition: top 1080ms cubic-bezier(0.22, 1, 0.36, 1), transform 1080ms cubic-bezier(0.22, 1, 0.36, 1), opacity 460ms ease;
+  transition: transform 1080ms cubic-bezier(0.22, 1, 0.36, 1), opacity 520ms ease 220ms;
 }
 
 .coffee-scene.is-ready .coffee-holder-wrap {
@@ -556,6 +586,7 @@ body {
 .coffee-scene.is-seated .coffee-holder-wrap {
   top: var(--scene-holder-seat-top);
   transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
 }
 
 .coffee-holder {
@@ -604,16 +635,109 @@ body {
 }
 
 .coffee-scene.is-finished .coffee-cup {
+  left: 50%;
   top: var(--scene-cup-seat-top);
-  transform: translate(-50%, -50%) scale(9);
+  width: var(--scene-cup-width);
+  transform: translate(-50%, -50%) scale(1.04);
   opacity: 1;
-  transition: transform 1250ms cubic-bezier(0.7, 0, 0.84, 0), top 1250ms ease;
+  transition: transform 420ms ease, top 420ms ease;
 }
 
 .coffee-scene.is-finished .coffee-holder-wrap {
-  transform: translate(-50%, -50%) scale(9);
+  top: var(--scene-holder-seat-top);
+  transform: translate(-50%, -50%) scale(1);
   opacity: 1;
-  transition: transform 1250ms cubic-bezier(0.7, 0, 0.84, 0);
+  transition: transform 420ms ease, top 420ms ease;
+}
+
+.coffee-cover {
+  position: absolute;
+  left: 50%;
+  top: calc(0px - var(--scene-cover-height));
+  z-index: 6;
+  width: var(--scene-cover-width);
+  height: var(--scene-cover-height);
+  object-fit: contain;
+  filter: drop-shadow(0 13px 16px rgba(20, 25, 23, 0.22));
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: top 840ms cubic-bezier(0.15, 1.12, 0.32, 1), opacity 240ms ease;
+}
+
+.coffee-scene.is-covered .coffee-cover {
+  top: var(--scene-cover-seat-top);
+  opacity: 1;
+}
+
+.coffee-finale {
+  position: absolute;
+  left: 50%;
+  top: var(--scene-finale-top);
+  z-index: 8;
+  display: grid;
+  place-items: center;
+  width: min(86vw, 560px);
+  min-height: 120px;
+  transform: translate(-50%, -42%);
+  opacity: 0;
+  transition: opacity 360ms ease, transform 560ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.coffee-scene.is-celebrating .coffee-finale {
+  transform: translate(-50%, -50%);
+  opacity: 1;
+}
+
+.coffee-finale-text {
+  position: relative;
+  z-index: 2;
+  margin: 0;
+  color: #263224;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: clamp(2rem, 7svh, 4.8rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0;
+  text-align: center;
+  text-shadow: 0 3px 0 rgba(255, 255, 255, 0.62), 0 20px 30px rgba(20, 25, 23, 0.18);
+}
+
+.coffee-confetti {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.coffee-confetti span {
+  position: absolute;
+  left: 50%;
+  top: 56%;
+  width: clamp(7px, 1.4svh, 12px);
+  height: clamp(12px, 2.2svh, 20px);
+  border-radius: 3px;
+  background: hsl(var(--confetti-hue), 72%, 52%);
+  opacity: 0;
+  transform: translate(-50%, -50%) rotate(0deg);
+}
+
+.coffee-scene.is-celebrating .coffee-confetti span {
+  animation: confetti-pop 1040ms var(--confetti-delay) cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes confetti-pop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.4) rotate(0deg);
+  }
+
+  18% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--confetti-x)), calc(-50% + var(--confetti-y))) scale(1) rotate(var(--confetti-rotate));
+  }
 }
 
 @media (max-width: 900px) {
