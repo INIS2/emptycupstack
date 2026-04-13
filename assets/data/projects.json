@@ -1,32 +1,134 @@
-﻿[
+[
   {
-    "title": "Brand Archive",
-    "url": "https://example.com/brand-archive",
-    "desc": "브랜드 스토리와 제품 라인업을 한 화면에서 탐색할 수 있도록 설계한 아카이브형 웹사이트."
+    "title": "EIP_TEST",
+    "desc": "정보처리기사 실기 기출문제 질답과 AI 해설을 제공하는 학습용 웹 프로젝트.",
+    "pages": "https://inis2.github.io/EIP_TEST/",
+    "github": "https://github.com/INIS2/EIP_TEST"
   },
   {
-    "title": "Creator Dashboard",
-    "url": "https://example.com/creator-dashboard",
-    "desc": "콘텐츠 성과, 일정, 협업 요청을 빠르게 파악할 수 있도록 구성한 크리에이터 대시보드."
+    "title": "MEMO",
+    "desc": "메모와 기록을 다루기 위한 개인용 프로젝트.",
+    "pages": "https://inis2.github.io/MEMO/",
+    "github": "https://github.com/INIS2/MEMO"
   },
   {
-    "title": "City Guide Campaign",
-    "url": "https://example.com/city-guide",
-    "desc": "지역 행사와 장소 정보를 시각적으로 큐레이션한 프로모션 랜딩페이지."
+    "title": "emptycupstack",
+    "desc": "컵 스택 모티프를 사용한 인터랙티브 포트폴리오 페이지.",
+    "pages": "https://inis2.github.io/emptycupstack/",
+    "github": "https://github.com/INIS2/emptycupstack"
   },
   {
-    "title": "Studio Booking Flow",
-    "url": "https://example.com/studio-booking",
-    "desc": "촬영 스튜디오 예약 단계를 단순화하고 전환율을 높이는 데 초점을 둔 예약 플로우."
+    "title": "MultiCV",
+    "desc": "하나의 원본 데이터로 여러 템플릿의 CV를 만들고 수정하는 프로젝트.",
+    "pages": "https://inis2.github.io/MultiCV/",
+    "github": "https://github.com/INIS2/MultiCV"
   },
   {
-    "title": "Signal Commerce",
-    "url": "https://example.com/signal-commerce",
-    "desc": "상품 큐레이션과 빠른 결제 경험을 결합한 실험형 커머스 프로젝트."
+    "title": "wonyoung_cv",
+    "desc": "CV 콘텐츠를 웹 페이지 형태로 구성한 이력서 프로젝트.",
+    "pages": "https://inis2.github.io/wonyoung_cv/",
+    "github": "https://github.com/INIS2/wonyoung_cv"
   },
   {
-    "title": "Live Event Microsite",
-    "url": "https://example.com/live-event",
-    "desc": "라이브 일정, 하이라이트, 티켓 링크를 집약해 보여주는 이벤트 마이크로사이트."
+    "title": "PDF_Cutter",
+    "desc": "PDF 파일을 필요한 단위로 자르기 위한 Python 기반 도구.",
+    "pages": "https://inis2.github.io/PDF_Cutter/",
+    "github": "https://github.com/INIS2/PDF_Cutter"
+  },
+  {
+    "title": "YSL",
+    "desc": "SCSS를 중심으로 구성한 스타일링 실험 프로젝트.",
+    "pages": "https://inis2.github.io/YSL/",
+    "github": "https://github.com/INIS2/YSL"
+  },
+  {
+    "title": "Museum-Item-Card-Assistant",
+    "desc": "데이터를 정리된 카드 형식으로 변환하는 보조 도구.",
+    "pages": "https://inis2.github.io/Museum-Item-Card-Assistant/",
+    "github": "https://github.com/INIS2/Museum-Item-Card-Assistant"
+  },
+  {
+    "title": "click_next_click",
+    "desc": "선택자 기반으로 브라우저 요소를 조작하는 자동화 도구.",
+    "pages": "https://inis2.github.io/click_next_click/",
+    "github": "https://github.com/INIS2/click_next_click"
+  },
+  {
+    "title": "INIS2",
+    "desc": "INIS2 계정과 관련된 기본 저장소 프로젝트.",
+    "pages": "https://inis2.github.io/INIS2/",
+    "github": "https://github.com/INIS2/INIS2"
+  },
+  {
+    "title": "RFP_Builder",
+    "desc": "기관 커스터마이징을 포함해 RFP 제안요청서의 기본 틀을 생성하는 도구.",
+    "pages": "https://inis2.github.io/RFP_Builder/",
+    "github": "https://github.com/INIS2/RFP_Builder"
+  },
+  {
+    "title": "DeepLook-Seeker",
+    "desc": "CIIP 점검과 분석 흐름을 보조하기 위한 탐색용 프로젝트.",
+    "pages": "https://inis2.github.io/DeepLook-Seeker/",
+    "github": "https://github.com/INIS2/DeepLook-Seeker"
+  },
+  {
+    "title": "DeepLook",
+    "desc": "KISA CIIP 2026 결과 대시보드와 리포터를 제공하는 프로젝트.",
+    "pages": "https://inis2.github.io/DeepLook/",
+    "github": "https://github.com/INIS2/DeepLook"
+  },
+  {
+    "title": "PDF_Parser_for_CIIP_Guide_2026",
+    "desc": "CIIP Guide 2026 PDF 문서를 파싱하기 위한 Python 프로젝트.",
+    "pages": "https://inis2.github.io/PDF_Parser_for_CIIP_Guide_2026/",
+    "github": "https://github.com/INIS2/PDF_Parser_for_CIIP_Guide_2026"
+  },
+  {
+    "title": "PDF_SPLIT_for_CIIP_Guide_2026",
+    "desc": "CIIP Guide 2026 PDF 문서를 분할하기 위한 Python 프로젝트.",
+    "pages": "https://inis2.github.io/PDF_SPLIT_for_CIIP_Guide_2026/",
+    "github": "https://github.com/INIS2/PDF_SPLIT_for_CIIP_Guide_2026"
+  },
+  {
+    "title": "Portfolio",
+    "desc": "Yeau for You 포트폴리오를 정리한 웹 프로젝트.",
+    "pages": "https://inis2.github.io/Portfolio/",
+    "github": "https://github.com/INIS2/Portfolio"
+  },
+  {
+    "title": "Acomm",
+    "desc": "Acomm 저장소를 기반으로 한 CSS 중심 프로젝트.",
+    "pages": "https://inis2.github.io/Acomm/",
+    "github": "https://github.com/INIS2/Acomm"
+  },
+  {
+    "title": "finalproject",
+    "desc": "finalproject 저장소를 기반으로 한 CSS 중심 프로젝트.",
+    "pages": "https://inis2.github.io/finalproject/",
+    "github": "https://github.com/INIS2/finalproject"
+  },
+  {
+    "title": "miniPJ",
+    "desc": "Java 기반의 미니 프로젝트.",
+    "pages": "https://inis2.github.io/miniPJ/",
+    "github": "https://github.com/INIS2/miniPJ"
+  },
+  {
+    "title": "JAVA-basic",
+    "desc": "Java 기초 학습과 실습을 정리한 저장소.",
+    "pages": "https://inis2.github.io/JAVA-basic/",
+    "github": "https://github.com/INIS2/JAVA-basic"
+  },
+  {
+    "title": "baby_programing",
+    "desc": "HTML 기반의 초기 프로그래밍 학습 프로젝트.",
+    "pages": "",
+    "github": "https://github.com/INIS2/baby_programing"
+  },
+  {
+    "title": "KIOSK_project",
+    "desc": "C 언어로 구성한 키오스크 프로젝트.",
+    "pages": "",
+    "github": ""
   }
 ]

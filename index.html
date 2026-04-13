@@ -19,38 +19,48 @@
 <body>
   <div class="page-shell">
     <header class="hero">
-      <h1>Empty Cup Stack</h1>
+      <p>Selected works</p>
+      <div class="hero-title-row">
+        <h1>Empty Cup Stack</h1>
+        <div class="stack-count" aria-live="polite">
+          <span id="stack-current">--</span>
+          <span class="stack-count-divider" aria-hidden="true">/</span>
+          <span id="stack-total">--</span>
+        </div>
+      </div>
     </header>
 
     <main class="showcase">
       <section class="stack-panel" aria-label="Project stack">
-        <div class="stack-stage">          <div id="cup-stack" class="cup-stack" aria-live="polite"></div>
+        <div class="stack-stage">
+          <div id="cup-stack" class="cup-stack" aria-live="polite"></div>
         </div>
       </section>
-
-      <aside class="detail-panel" aria-live="polite">
-        <h2 id="detail-title">Project</h2>
-        <p id="detail-desc">Hover over a cup to read the project.</p>
-        <a
-          id="detail-link"
-          class="detail-link is-disabled"
-          href="#"
-          target="_blank"
-          rel="noreferrer"
-          aria-disabled="true"
-        >
-          Open Project
-        </a>
-      </aside>
     </main>
   </div>
 
   <template id="cup-template">
-    <a class="cup-card" href="#" target="_blank" rel="noreferrer">
-      <img class="cup-image" src="./assets/img/cup.png" alt="" aria-hidden="true">
-      <span class="cup-label"></span>
-      <span class="cup-index" aria-hidden="true"></span>
-    </a>
+    <article class="cup-card">
+      <button class="cup-toggle" type="button" aria-expanded="false">
+        <span class="cup-visual">
+          <img class="cup-image" src="./assets/img/cup.png" alt="" aria-hidden="true">
+          <span class="cup-label"></span>
+        </span>
+      </button>
+      <div class="cup-index">
+        <button class="cup-summary" type="button" aria-expanded="false"></button>
+        <div class="cup-actions">
+          <div class="cup-action-group">
+            <a class="cup-link" data-link="page-current" href="#">Page 현재창</a>
+            <a class="cup-link" data-link="page-new" href="#" target="_blank" rel="noreferrer">Page 새창</a>
+          </div>
+          <div class="cup-action-group">
+            <a class="cup-link cup-link-secondary" data-link="github-current" href="#">GitHub 현재창</a>
+            <a class="cup-link cup-link-secondary" data-link="github-new" href="#" target="_blank" rel="noreferrer">GitHub 새창</a>
+          </div>
+        </div>
+      </div>
+    </article>
   </template>
 
   <script src="./assets/js/script.js" type="module"></script>

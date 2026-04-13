@@ -1,182 +1,255 @@
-﻿const stackElement = document.querySelector("#cup-stack");
-const detailPanel = document.querySelector(".detail-panel");
-const detailTitle = document.querySelector("#detail-title");
-const detailDesc = document.querySelector("#detail-desc");
-const detailLink = document.querySelector("#detail-link");
+const stackElement = document.querySelector("#cup-stack");
+const stackCurrent = document.querySelector("#stack-current");
+const stackTotal = document.querySelector("#stack-total");
 const template = document.querySelector("#cup-template");
 
 const fallbackProjects = [
   {
-    title: "Brand Archive",
-    url: "https://example.com/brand-archive",
-    desc: "브랜드 스토리와 제품 라인업을 한 화면에서 탐색할 수 있도록 설계한 아카이브형 웹사이트."
+    title: "emptycupstack",
+    desc: "Interactive portfolio page with a stacked cup motif.",
+    pages: "https://inis2.github.io/emptycupstack/",
+    github: "https://github.com/INIS2/emptycupstack"
   },
   {
-    title: "Creator Dashboard",
-    url: "https://example.com/creator-dashboard",
-    desc: "콘텐츠 성과, 일정, 협업 요청을 빠르게 파악할 수 있도록 구성한 크리에이터 대시보드."
-  },
-  {
-    title: "City Guide Campaign",
-    url: "https://example.com/city-guide",
-    desc: "지역 행사와 장소 정보를 시각적으로 큐레이션한 프로모션 랜딩페이지."
-  },
-  {
-    title: "Studio Booking Flow",
-    url: "https://example.com/studio-booking",
-    desc: "촬영 스튜디오 예약 단계를 단순화하고 전환율을 높이는 데 초점을 둔 예약 플로우."
-  },
-  {
-    title: "Signal Commerce",
-    url: "https://example.com/signal-commerce",
-    desc: "상품 큐레이션과 빠른 결제 경험을 결합한 실험형 커머스 프로젝트."
-  },
-  {
-    title: "Live Event Microsite",
-    url: "https://example.com/live-event",
-    desc: "라이브 일정, 하이라이트, 티켓 링크를 집약해 보여주는 이벤트 마이크로사이트."
+    title: "MultiCV",
+    desc: "Create and edit multiple CV templates from one source.",
+    pages: "https://inis2.github.io/MultiCV/",
+    github: "https://github.com/INIS2/MultiCV"
   }
 ];
 
-const defaultDetail = {
-  title: "Project",
-  desc: "Hover over a cup to read the project.",
-  url: "#"
-};
-
 let currentProjects = [];
-let activeIndex = -1;
-let pinnedIndex = -1;
+let expandedIndex = -1;
+let hoverIndex = -1;
+let dragStartY = 0;
+let dragStartScrollTop = 0;
+let isDraggingStack = false;
+let suppressNextClick = false;
+let pressIndex = -1;
+let scrollTarget = 0;
+let scrollFrame = 0;
 
-const getStackIndexFromDomIndex = (domIndex, total) => total - domIndex - 1;
+const DEFAULT_STACK_GAP = 72;
+const CUP_FLOAT_RATIO = 0.2;
 
-const getEffectiveIndex = () => (pinnedIndex >= 0 ? pinnedIndex : activeIndex);
+const truncate = (text, length) => (
+  text.length > length ? `${text.slice(0, length - 2)}...` : text
+);
 
-const updateDetail = (project, activeCard) => {
-  detailTitle.textContent = project.title;
-  detailDesc.textContent = project.desc;
-  detailLink.href = project.url;
-  detailLink.textContent = "Open Project";
-  detailLink.classList.toggle("is-disabled", project.url === "#");
-  detailLink.setAttribute("aria-disabled", String(project.url === "#"));
+const hasUrl = (value) => typeof value === "string" && value.trim().length > 0;
 
-  document.querySelectorAll(".cup-card").forEach((card) => {
-    card.classList.remove("is-active");
-    card.classList.remove("is-pinned");
-  });
+const updateStackCount = () => {
+  const activeIndex = expandedIndex >= 0 ? expandedIndex : hoverIndex;
 
-  if (activeCard) {
-    activeCard.classList.add("is-active");
-    if (pinnedIndex >= 0) {
-      activeCard.classList.add("is-pinned");
-    }
-    detailPanel.classList.add("is-visible");
-  } else {
-    detailPanel.classList.remove("is-visible");
+  stackCurrent.textContent = activeIndex >= 0
+    ? String(activeIndex + 1).padStart(2, "0")
+    : "--";
+  stackTotal.textContent = String(currentProjects.length).padStart(2, "0");
+};
+
+const getMaxStackScroll = () => Math.max(0, stackElement.scrollHeight - stackElement.clientHeight);
+
+const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+
+const animateStackScroll = () => {
+  const distance = scrollTarget - stackElement.scrollTop;
+
+  if (Math.abs(distance) < 0.5) {
+    stackElement.scrollTop = scrollTarget;
+    scrollFrame = 0;
+    return;
+  }
+
+  stackElement.scrollTop += distance * 0.22;
+  scrollFrame = window.requestAnimationFrame(animateStackScroll);
+};
+
+const scrollStackBy = (delta) => {
+  scrollTarget = clamp(scrollTarget + delta, 0, getMaxStackScroll());
+
+  if (!scrollFrame) {
+    scrollFrame = window.requestAnimationFrame(animateStackScroll);
   }
 };
 
-const computeBottomOffset = (stackIndex, activeStackIndex) => {
-  const compactGap = 34;
-  const focusLift = 108;
-  const aboveGap = 40;
+const jumpStackToBottom = () => {
+  scrollTarget = getMaxStackScroll();
+  stackElement.scrollTop = scrollTarget;
+};
 
-  if (activeStackIndex < 1) {
-    return stackIndex * compactGap;
+const getCardIndexFromEvent = (event) => {
+  const card = event.target.closest(".cup-card");
+  return card ? Number(card.dataset.index) : -1;
+};
+
+const getStackGap = (card) => (
+  Number.parseFloat(window.getComputedStyle(card).getPropertyValue("--stack-gap")) || DEFAULT_STACK_GAP
+);
+
+const getCupFloatGap = (height) => height * CUP_FLOAT_RATIO;
+
+const keepExpandedCupInside = () => {
+  if (expandedIndex < 0) {
+    return;
   }
 
-  if (stackIndex < activeStackIndex) {
-    return stackIndex * compactGap;
+  const cards = stackElement.querySelectorAll(".cup-card");
+  const card = cards[expandedIndex];
+  if (!card) {
+    return;
   }
 
-  if (stackIndex === activeStackIndex) {
-    return (stackIndex * compactGap) + focusLift;
-  }
+  const padding = 12;
+  const lift = Number.parseFloat(card.style.getPropertyValue("--cup-lift")) || 0;
+  const hasBelowCup = expandedIndex < cards.length - 1;
+  const floatGap = hasBelowCup ? getCupFloatGap(card.offsetHeight) : 0;
+  const top = card.offsetTop + lift;
+  const bottom = top + card.offsetHeight + floatGap;
+  const viewTop = stackElement.scrollTop;
+  const viewBottom = viewTop + stackElement.clientHeight;
 
-  return (activeStackIndex * compactGap) + focusLift + ((stackIndex - activeStackIndex) * aboveGap);
+  if (top < viewTop + padding) {
+    scrollTarget = Math.max(0, top - padding);
+    stackElement.scrollTop = scrollTarget;
+  } else if (bottom > viewBottom - padding) {
+    scrollTarget = bottom - stackElement.clientHeight + padding;
+    stackElement.scrollTop = scrollTarget;
+  }
 };
 
 const applyStackLayout = () => {
   const cards = [...stackElement.querySelectorAll(".cup-card")];
-  const total = cards.length;
-  const effectiveIndex = getEffectiveIndex();
-  const rawActiveStackIndex = effectiveIndex < 0 ? -1 : getStackIndexFromDomIndex(effectiveIndex, total);
-  const activeStackIndex = rawActiveStackIndex === 0 ? -1 : rawActiveStackIndex;
+  const cardHeight = cards[0]?.getBoundingClientRect().height ?? 0;
+  const stackGap = cards[0] ? getStackGap(cards[0]) : DEFAULT_STACK_GAP;
+  const cupFloatGap = getCupFloatGap(cardHeight);
+  const lastIndex = cards.length - 1;
+  const liftIndex = expandedIndex >= 0 ? expandedIndex : hoverIndex;
+  const canLift = liftIndex >= 0 && liftIndex < lastIndex;
+  const topReserve = canLift ? cupFloatGap : 0;
+  const expandedGap = expandedIndex >= 0 && expandedIndex < lastIndex
+    ? Math.max(0, cardHeight - stackGap)
+    : 0;
+  const stackHeight = Math.max(0, topReserve + ((cards.length - 1) * stackGap) + cardHeight + expandedGap);
+  const baseTop = Math.max(0, stackElement.clientHeight - stackHeight);
 
-  cards.forEach((card, domIndex) => {
-    const stackIndex = getStackIndexFromDomIndex(domIndex, total);
-    const bottom = computeBottomOffset(stackIndex, activeStackIndex);
-    const layer = total - stackIndex;
+  stackElement.style.setProperty("--stack-height", `${stackHeight}px`);
 
-    card.style.setProperty("--cup-bottom", `${bottom}px`);
-    card.style.zIndex = String(layer);
+  cards.forEach((card, index) => {
+    const isExpanded = index === expandedIndex;
+    const isLifted = canLift && index <= liftIndex;
+    const top = baseTop + topReserve + (index * stackGap) + (expandedIndex >= 0 && index > expandedIndex ? expandedGap : 0);
+    const toggle = card.querySelector(".cup-toggle");
+    const summary = card.querySelector(".cup-summary");
+
+    card.classList.toggle("is-expanded", isExpanded);
+    card.classList.toggle("is-lifted", isLifted);
+    card.style.setProperty("--cup-top", `${top}px`);
+    card.style.setProperty("--cup-lift", isLifted ? `-${cupFloatGap}px` : "0px");
+    card.style.zIndex = String(index + 1);
+    toggle.setAttribute("aria-expanded", String(isExpanded));
+    summary.setAttribute("aria-expanded", String(isExpanded));
   });
 };
 
-const syncSelection = () => {
-  const index = getEffectiveIndex();
-
-  if (index < 0) {
-    updateDetail(defaultDetail, null);
-  } else {
-    const cards = stackElement.querySelectorAll(".cup-card");
-    updateDetail(currentProjects[index], cards[index]);
-  }
-
+const syncState = () => {
+  updateStackCount();
   applyStackLayout();
+  keepExpandedCupInside();
 };
 
-const setActiveCup = (index) => {
-  if (pinnedIndex >= 0) {
+const toggleProject = (index, options = {}) => {
+  if (suppressNextClick && !options.force) {
     return;
   }
 
-  activeIndex = index;
-  syncSelection();
+  expandedIndex = expandedIndex === index ? -1 : index;
+  hoverIndex = -1;
+  syncState();
 };
 
-const togglePinnedCup = (index) => {
-  pinnedIndex = pinnedIndex === index ? -1 : index;
-  activeIndex = pinnedIndex >= 0 ? index : -1;
-  syncSelection();
+const setHoverProject = (index) => {
+  if (expandedIndex >= 0 || isDraggingStack) {
+    return;
+  }
+
+  hoverIndex = index;
+  syncState();
+};
+
+const clearHoverProject = () => {
+  if (expandedIndex >= 0 || isDraggingStack) {
+    return;
+  }
+
+  hoverIndex = -1;
+  syncState();
 };
 
 const createCupCard = (project, index) => {
-  const cup = template.content.firstElementChild.cloneNode(true);
-  const label = cup.querySelector(".cup-label");
-  const indexBadge = cup.querySelector(".cup-index");
-  const shortTitle = project.title.length > 24 ? `${project.title.slice(0, 22)}...` : project.title;
+  const card = template.content.firstElementChild.cloneNode(true);
+  const toggle = card.querySelector(".cup-toggle");
+  const summary = card.querySelector(".cup-summary");
 
-  cup.href = "#";
-  cup.setAttribute("aria-label", `View project ${project.title}`);
-  label.textContent = shortTitle;
-  indexBadge.textContent = String(index + 1).padStart(2, "0");
+  const title = document.createElement("strong");
+  const desc = document.createElement("span");
 
-  cup.addEventListener("mouseenter", () => setActiveCup(index));
-  cup.addEventListener("focus", () => setActiveCup(index));
-  cup.addEventListener("click", (event) => {
-    event.preventDefault();
-    togglePinnedCup(index);
+  card.dataset.index = String(index);
+  title.textContent = project.title;
+  desc.textContent = truncate(project.desc, 86);
+  summary.replaceChildren(title, desc);
+
+  if (hasUrl(project.pages)) {
+    card.querySelector('[data-link="page-current"]').href = project.pages;
+    card.querySelector('[data-link="page-new"]').href = project.pages;
+  } else {
+    card.querySelector('[data-link="page-current"]').closest(".cup-action-group").remove();
+  }
+
+  if (hasUrl(project.github)) {
+    card.querySelector('[data-link="github-current"]').href = project.github;
+    card.querySelector('[data-link="github-new"]').href = project.github;
+  } else {
+    card.querySelector('[data-link="github-current"]').closest(".cup-action-group").remove();
+  }
+
+  if (!card.querySelector(".cup-action-group")) {
+    card.querySelector(".cup-actions").remove();
+  }
+  toggle.setAttribute("aria-label", `Expand project ${project.title}`);
+  summary.setAttribute("aria-label", `Expand project ${project.title}`);
+  toggle.addEventListener("focus", () => setHoverProject(index));
+  summary.addEventListener("focus", () => setHoverProject(index));
+
+  [toggle, summary].forEach((target) => {
+    target.addEventListener("mouseenter", () => setHoverProject(index));
+    target.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      toggleProject(index);
+    });
   });
 
-  return cup;
+  card.querySelectorAll(".cup-link").forEach((link) => {
+    link.addEventListener("click", (event) => {
+      event.stopPropagation();
+    });
+  });
+
+  return card;
 };
 
 const renderProjects = (projects) => {
   currentProjects = projects;
-  activeIndex = -1;
-  pinnedIndex = -1;
+  expandedIndex = -1;
+  hoverIndex = -1;
   stackElement.innerHTML = "";
 
   projects.forEach((project, index) => {
     stackElement.appendChild(createCupCard(project, index));
   });
 
-  syncSelection();
-};
-
-const renderError = () => {
-  renderProjects(fallbackProjects);
+  syncState();
+  jumpStackToBottom();
 };
 
 const loadProjects = async () => {
@@ -187,26 +260,103 @@ const loadProjects = async () => {
     }
 
     const projects = await response.json();
-    const validProjects = projects.filter((project) => project.title && project.url && project.desc);
+    const validProjects = projects.filter((project) => (
+      project.title && project.desc && (hasUrl(project.pages) || hasUrl(project.github))
+    ));
 
     renderProjects(validProjects.length ? validProjects : fallbackProjects);
   } catch (error) {
     console.error(error);
-    renderError();
+    renderProjects(fallbackProjects);
   }
 };
 
-stackElement.addEventListener("mouseleave", () => {
-  if (pinnedIndex < 0) {
-    setActiveCup(-1);
-  }
+const resizeObserver = new ResizeObserver(() => {
+  applyStackLayout();
+  keepExpandedCupInside();
 });
 
+stackElement.addEventListener("mouseleave", clearHoverProject);
 stackElement.addEventListener("focusout", (event) => {
-  if (pinnedIndex < 0 && !stackElement.contains(event.relatedTarget)) {
-    setActiveCup(-1);
+  if (!stackElement.contains(event.relatedTarget)) {
+    clearHoverProject();
   }
 });
 
-syncSelection();
+stackElement.addEventListener("wheel", (event) => {
+  if (stackElement.scrollHeight <= stackElement.clientHeight) {
+    return;
+  }
+
+  event.preventDefault();
+  scrollStackBy(event.deltaY);
+}, { passive: false });
+
+stackElement.addEventListener("pointerdown", (event) => {
+  if (event.button !== 0 || event.target.closest(".cup-link")) {
+    return;
+  }
+
+  pressIndex = getCardIndexFromEvent(event);
+
+  if (stackElement.scrollHeight <= stackElement.clientHeight) {
+    return;
+  }
+
+  stackElement.setPointerCapture(event.pointerId);
+  stackElement.classList.add("is-dragging");
+  dragStartY = event.clientY;
+  dragStartScrollTop = stackElement.scrollTop;
+  scrollTarget = stackElement.scrollTop;
+  isDraggingStack = false;
+});
+
+stackElement.addEventListener("pointermove", (event) => {
+  if (!stackElement.hasPointerCapture(event.pointerId)) {
+    return;
+  }
+
+  const deltaY = event.clientY - dragStartY;
+  if (Math.abs(deltaY) > 4) {
+    isDraggingStack = true;
+    suppressNextClick = true;
+    hoverIndex = -1;
+  }
+
+  if (isDraggingStack) {
+    event.preventDefault();
+    stackElement.scrollTop = dragStartScrollTop - deltaY;
+    scrollTarget = stackElement.scrollTop;
+    applyStackLayout();
+  }
+});
+
+const endStackDrag = (event) => {
+  if (!stackElement.hasPointerCapture(event.pointerId)) {
+    return;
+  }
+
+  const wasDraggingStack = isDraggingStack;
+  const pressedProjectIndex = pressIndex;
+
+  stackElement.releasePointerCapture(event.pointerId);
+  stackElement.classList.remove("is-dragging");
+  isDraggingStack = false;
+  pressIndex = -1;
+
+  if (!wasDraggingStack && pressedProjectIndex >= 0) {
+    suppressNextClick = true;
+    toggleProject(pressedProjectIndex, { force: true });
+  }
+
+  window.setTimeout(() => {
+    suppressNextClick = false;
+  }, 80);
+};
+
+stackElement.addEventListener("pointerup", endStackDrag);
+stackElement.addEventListener("pointercancel", endStackDrag);
+
+resizeObserver.observe(stackElement);
+updateStackCount();
 loadProjects();
