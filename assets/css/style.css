@@ -2,10 +2,8 @@
   --surface: #eef1ee;
   --surface-strong: #d9e3dd;
   --panel: #18201c;
-  --panel-border: rgba(255, 255, 255, 0.2);
   --text: #141917;
   --muted: #66736c;
-  --cup-ink: #5c3621;
   --accent: #006d77;
 }
 
@@ -229,10 +227,6 @@ body {
   -webkit-user-drag: none;
 }
 
-.cup-label {
-  display: none;
-}
-
 .cup-index {
   position: absolute;
   left: var(--cup-width);
@@ -350,7 +344,6 @@ body {
   border: 1px solid transparent;
   border-radius: 8px;
   background: var(--panel);
-  color: var(--cup-ink);
   color: #f7fbf8;
   font-weight: 700;
   font-size: 0.86rem;
@@ -455,7 +448,6 @@ body {
   --scene-cover-seat-top: calc(var(--scene-cup-top-edge) - (var(--scene-cover-height) / 2) + var(--scene-cover-overlap));
   --scene-holder-width: calc(var(--scene-cup-width) * 0.95);
   --scene-holder-height: calc(var(--scene-holder-width) * 253 / 338);
-  --scene-holder-start-top: 70%;
   --scene-holder-seat-top: calc(var(--scene-cup-seat-top) + (var(--scene-cup-height) / 6) - (var(--scene-holder-height) / 2));
   --scene-finale-top: calc(var(--scene-cup-bottom-edge) + clamp(30px, 5svh, 62px));
   --scene-machine-width: clamp(360px, 50svh, 580px);
@@ -851,9 +843,6 @@ body {
 
   .cup-index {
     left: var(--cup-width);
-  }
-
-  .cup-index {
     top: 0;
   }
 

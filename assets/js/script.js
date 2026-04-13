@@ -32,6 +32,20 @@ let isCoffeeTransitioning = false;
 
 const DEFAULT_STACK_GAP = 72;
 const CUP_FLOAT_RATIO = 0.2;
+const COFFEE_STREAM_COUNT = 15;
+const COFFEE_STREAM_DELAY = 500;
+const COFFEE_STREAM_DURATION = 3200;
+const CONFETTI_PIECE_COUNT = 28;
+const COFFEE_TIMING = {
+  sceneMount: 40,
+  moveToTop: 1100,
+  moveToHolder: 1120,
+  machineEnter: 1350,
+  pour: COFFEE_STREAM_DURATION + ((COFFEE_STREAM_COUNT - 1) * COFFEE_STREAM_DELAY),
+  finish: 520,
+  cover: 980,
+  celebrate: 1550
+};
 
 const truncate = (text, length) => (
   text.length > length ? `${text.slice(0, length - 2)}...` : text
@@ -43,12 +57,18 @@ const wait = (duration) => new Promise((resolve) => {
   window.setTimeout(resolve, duration);
 });
 
+const setDecorativeImage = (image, src) => {
+  image.src = src;
+  image.alt = "";
+  image.setAttribute("aria-hidden", "true");
+};
+
 const buildCoffeeScene = (project, cupRect) => {
   const scene = document.createElement("div");
   const stage = document.createElement("div");
   const machine = document.createElement("img");
   const streamMask = document.createElement("div");
-  const streams = Array.from({ length: 15 }, () => document.createElement("img"));
+  const streams = Array.from({ length: COFFEE_STREAM_COUNT }, () => document.createElement("img"));
   const cup = document.createElement("img");
   const cover = document.createElement("img");
   const holderWrap = document.createElement("div");
@@ -72,7 +92,7 @@ const buildCoffeeScene = (project, cupRect) => {
   streams.forEach((stream, index) => {
     stream.className = "coffee-stream";
     stream.style.setProperty("--stream-index", index);
-    stream.style.setProperty("--stream-delay", `${index * 500}ms`);
+    stream.style.setProperty("--stream-delay", `${index * COFFEE_STREAM_DELAY}ms`);
   });
   cup.className = "coffee-cup";
   cover.className = "coffee-cover";
@@ -83,28 +103,18 @@ const buildCoffeeScene = (project, cupRect) => {
   finaleText.className = "coffee-finale-text";
   confetti.className = "coffee-confetti";
 
-  machine.src = "./assets/img/shot_machine.png";
-  machine.alt = "";
-  machine.setAttribute("aria-hidden", "true");
+  setDecorativeImage(machine, "./assets/img/shot_machine.png");
   streams.forEach((stream) => {
-    stream.src = "./assets/img/coffee.png";
-    stream.alt = "";
-    stream.setAttribute("aria-hidden", "true");
+    setDecorativeImage(stream, "./assets/img/coffee.png");
   });
-  cup.src = "./assets/img/cup.png";
-  cup.alt = "";
-  cup.setAttribute("aria-hidden", "true");
-  cover.src = "./assets/img/cover.png";
-  cover.alt = "";
-  cover.setAttribute("aria-hidden", "true");
-  holder.src = "./assets/img/holder.png";
-  holder.alt = "";
-  holder.setAttribute("aria-hidden", "true");
+  setDecorativeImage(cup, "./assets/img/cup.png");
+  setDecorativeImage(cover, "./assets/img/cover.png");
+  setDecorativeImage(holder, "./assets/img/holder.png");
 
   title.textContent = project.title;
   desc.textContent = truncate(project.desc, 80);
   finaleText.textContent = "Bon App\u00e9tit";
-  Array.from({ length: 28 }, (_, index) => {
+  Array.from({ length: CONFETTI_PIECE_COUNT }, (_, index) => {
     const piece = document.createElement("span");
     piece.style.setProperty("--confetti-index", index);
     piece.style.setProperty("--confetti-x", `${((index * 37) % 220) - 110}px`);
@@ -135,21 +145,21 @@ const runCoffeeTransition = async (project, url, card) => {
   document.body.appendChild(scene);
   document.body.classList.add("is-coffee-transitioning");
 
-  await wait(40);
+  await wait(COFFEE_TIMING.sceneMount);
   scene.classList.add("is-ready");
-  await wait(1100);
+  await wait(COFFEE_TIMING.moveToTop);
   scene.classList.add("is-seated");
-  await wait(1120);
+  await wait(COFFEE_TIMING.moveToHolder);
   scene.classList.add("is-machine-ready");
-  await wait(1350);
+  await wait(COFFEE_TIMING.machineEnter);
   scene.classList.add("is-pouring");
-  await wait(10200);
+  await wait(COFFEE_TIMING.pour);
   scene.classList.add("is-finished");
-  await wait(520);
+  await wait(COFFEE_TIMING.finish);
   scene.classList.add("is-covered");
-  await wait(980);
+  await wait(COFFEE_TIMING.cover);
   scene.classList.add("is-celebrating");
-  await wait(1550);
+  await wait(COFFEE_TIMING.celebrate);
   window.location.href = url;
 };
 
