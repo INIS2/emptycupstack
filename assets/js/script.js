@@ -28,6 +28,7 @@ let suppressNextClick = false;
 let pressIndex = -1;
 let scrollTarget = 0;
 let scrollFrame = 0;
+let isCoffeeTransitioning = false;
 
 const DEFAULT_STACK_GAP = 72;
 const CUP_FLOAT_RATIO = 0.2;
@@ -37,6 +38,81 @@ const truncate = (text, length) => (
 );
 
 const hasUrl = (value) => typeof value === "string" && value.trim().length > 0;
+
+const wait = (duration) => new Promise((resolve) => {
+  window.setTimeout(resolve, duration);
+});
+
+const buildCoffeeScene = (project) => {
+  const scene = document.createElement("div");
+  const stage = document.createElement("div");
+  const machine = document.createElement("img");
+  const streamMask = document.createElement("div");
+  const stream = document.createElement("img");
+  const cup = document.createElement("img");
+  const holderWrap = document.createElement("div");
+  const holder = document.createElement("img");
+  const engraving = document.createElement("div");
+  const title = document.createElement("strong");
+  const desc = document.createElement("span");
+
+  scene.className = "coffee-scene";
+  stage.className = "coffee-stage";
+  machine.className = "coffee-machine";
+  streamMask.className = "coffee-stream-mask";
+  stream.className = "coffee-stream";
+  cup.className = "coffee-cup";
+  holderWrap.className = "coffee-holder-wrap";
+  holder.className = "coffee-holder";
+  engraving.className = "coffee-engraving";
+
+  machine.src = "./assets/img/shot_machine.png";
+  machine.alt = "";
+  machine.setAttribute("aria-hidden", "true");
+  stream.src = "./assets/img/coffee.png";
+  stream.alt = "";
+  stream.setAttribute("aria-hidden", "true");
+  cup.src = "./assets/img/cup.png";
+  cup.alt = "";
+  cup.setAttribute("aria-hidden", "true");
+  holder.src = "./assets/img/holder.png";
+  holder.alt = "";
+  holder.setAttribute("aria-hidden", "true");
+
+  title.textContent = project.title;
+  desc.textContent = truncate(project.desc, 80);
+  engraving.append(title, desc);
+  holderWrap.append(holder, engraving);
+  streamMask.append(stream);
+  stage.append(machine, streamMask, cup, holderWrap);
+  scene.append(stage);
+
+  return scene;
+};
+
+const runCoffeeTransition = async (project, url) => {
+  if (isCoffeeTransitioning || !hasUrl(url)) {
+    return;
+  }
+
+  isCoffeeTransitioning = true;
+  const scene = buildCoffeeScene(project);
+  document.body.appendChild(scene);
+  document.body.classList.add("is-coffee-transitioning");
+
+  await wait(40);
+  scene.classList.add("is-ready");
+  await wait(1100);
+  scene.classList.add("is-seated");
+  await wait(1120);
+  scene.classList.add("is-machine-ready");
+  await wait(1350);
+  scene.classList.add("is-pouring");
+  await wait(3200);
+  scene.classList.add("is-finished");
+  await wait(1250);
+  window.location.href = url;
+};
 
 const updateStackCount = () => {
   const activeIndex = expandedIndex >= 0 ? expandedIndex : hoverIndex;
@@ -199,17 +275,19 @@ const createCupCard = (project, index) => {
   summary.replaceChildren(title, desc);
 
   if (hasUrl(project.pages)) {
+    card.querySelector('[data-link="page-coffee"]').href = project.pages;
     card.querySelector('[data-link="page-current"]').href = project.pages;
     card.querySelector('[data-link="page-new"]').href = project.pages;
   } else {
-    card.querySelector('[data-link="page-current"]').closest(".cup-action-group").remove();
+    card.querySelector('[data-link="page-coffee"]').closest(".cup-action-group").remove();
   }
 
   if (hasUrl(project.github)) {
+    card.querySelector('[data-link="github-coffee"]').href = project.github;
     card.querySelector('[data-link="github-current"]').href = project.github;
     card.querySelector('[data-link="github-new"]').href = project.github;
   } else {
-    card.querySelector('[data-link="github-current"]').closest(".cup-action-group").remove();
+    card.querySelector('[data-link="github-coffee"]').closest(".cup-action-group").remove();
   }
 
   if (!card.querySelector(".cup-action-group")) {
@@ -232,6 +310,11 @@ const createCupCard = (project, index) => {
   card.querySelectorAll(".cup-link").forEach((link) => {
     link.addEventListener("click", (event) => {
       event.stopPropagation();
+
+      if (link.classList.contains("cup-link-coffee")) {
+        event.preventDefault();
+        runCoffeeTransition(project, link.href);
+      }
     });
   });
 

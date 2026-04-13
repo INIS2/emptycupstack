@@ -310,9 +310,10 @@ body {
 
 .cup-actions {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
   align-items: stretch;
+  justify-items: start;
   max-height: 0;
   overflow: hidden;
   padding: 0 12px;
@@ -323,7 +324,8 @@ body {
 
 .cup-action-group {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  width: min(100%, 620px);
   min-width: 0;
 }
 
@@ -332,8 +334,8 @@ body {
 }
 
 .cup-card.is-expanded .cup-actions {
-  max-height: 96px;
-  padding: 0 12px 14px;
+  max-height: calc(100% - var(--stack-gap));
+  padding: 0 12px 12px;
   opacity: 1;
   transform: translateY(0);
 }
@@ -366,6 +368,11 @@ body {
   border-bottom-right-radius: 0;
 }
 
+.cup-action-group .cup-link:not(:first-child):not(:last-child) {
+  margin-left: -1px;
+  border-radius: 0;
+}
+
 .cup-action-group .cup-link:last-child {
   margin-left: -1px;
   border-top-left-radius: 0;
@@ -395,6 +402,218 @@ body {
 .cup-link-secondary:hover,
 .cup-link-secondary:focus-visible {
   background: rgba(20, 25, 23, 0.08);
+}
+
+.is-coffee-transitioning .page-shell {
+  opacity: 0;
+  transition: opacity 260ms ease;
+  pointer-events: none;
+}
+
+.coffee-scene {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: radial-gradient(circle at center, rgba(247, 249, 245, 0.96), rgba(217, 227, 221, 0.98));
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 320ms ease;
+}
+
+.coffee-scene.is-ready {
+  opacity: 1;
+}
+
+.coffee-stage {
+  --scene-cup-width: clamp(180px, 25svh, 280px);
+  --scene-cup-ratio: 0.806;
+  --scene-cup-height: calc(var(--scene-cup-width) / var(--scene-cup-ratio));
+  --scene-cup-start-top: 32%;
+  --scene-cup-seat-top: 64%;
+  --scene-holder-width: calc(var(--scene-cup-width) * 0.95);
+  --scene-holder-height: calc(var(--scene-holder-width) * 253 / 338);
+  --scene-holder-start-top: 70%;
+  --scene-holder-seat-top: calc(var(--scene-cup-seat-top) + (var(--scene-cup-height) / 6) - (var(--scene-holder-height) / 2));
+  --scene-machine-width: clamp(360px, 50svh, 580px);
+  --scene-machine-top: 50%;
+  --scene-stream-top: calc(var(--scene-machine-top) - 9svh);
+  --scene-stream-bottom: calc(var(--scene-cup-seat-top) + (var(--scene-cup-height) / 2));
+  position: relative;
+  width: 100vw;
+  height: 100svh;
+}
+
+.coffee-machine,
+.coffee-stream,
+.coffee-cup,
+.coffee-holder,
+.coffee-engraving {
+  user-select: none;
+  pointer-events: none;
+}
+
+.coffee-machine {
+  position: absolute;
+  left: 50%;
+  top: var(--scene-machine-top);
+  z-index: 1;
+  width: var(--scene-machine-width);
+  transform: translate(-50%, -50%) scale(0.36);
+  opacity: 0;
+  transform-origin: center center;
+  transition: transform 1400ms cubic-bezier(0.16, 1, 0.3, 1), opacity 640ms ease;
+}
+
+.coffee-scene.is-machine-ready .coffee-machine {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+}
+
+.coffee-scene.is-finished .coffee-machine {
+  transform: translate(-50%, -50%) scale(0.92);
+  opacity: 0;
+  transition: transform 420ms ease, opacity 320ms ease;
+}
+
+.coffee-stream-mask {
+  position: absolute;
+  left: 50%;
+  top: var(--scene-stream-top);
+  z-index: 2;
+  width: clamp(26px, 4svh, 42px);
+  height: calc(var(--scene-stream-bottom) - var(--scene-stream-top));
+  overflow: hidden;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+.coffee-stream {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 100%;
+  height: 122%;
+  object-fit: fill;
+  transform: translateX(-50%) translateY(-100%) scaleY(0.25);
+  transform-origin: top center;
+  transition: transform 3200ms linear;
+}
+
+.coffee-scene.is-pouring .coffee-stream-mask {
+  opacity: 1;
+}
+
+.coffee-scene.is-pouring .coffee-stream {
+  transform: translateX(-50%) translateY(0) scaleY(1);
+}
+
+.coffee-scene.is-finished .coffee-stream-mask {
+  opacity: 0;
+  transition: opacity 220ms ease;
+}
+
+.coffee-cup {
+  position: absolute;
+  left: 50%;
+  top: var(--scene-cup-start-top);
+  z-index: 3;
+  width: var(--scene-cup-width);
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 0;
+  object-fit: contain;
+  transition: top 1120ms cubic-bezier(0.22, 1, 0.36, 1), transform 1120ms cubic-bezier(0.22, 1, 0.36, 1), opacity 460ms ease;
+}
+
+.coffee-scene.is-ready .coffee-cup {
+  opacity: 1;
+}
+
+.coffee-scene.is-seated .coffee-cup {
+  top: var(--scene-cup-seat-top);
+  transform: translate(-50%, -50%) scale(1.04);
+}
+
+.coffee-holder-wrap {
+  position: absolute;
+  left: 50%;
+  top: var(--scene-holder-start-top);
+  z-index: 4;
+  width: var(--scene-holder-width);
+  aspect-ratio: 338 / 253;
+  transform: translate(-50%, -50%) scale(0.92);
+  opacity: 0;
+  transition: top 1080ms cubic-bezier(0.22, 1, 0.36, 1), transform 1080ms cubic-bezier(0.22, 1, 0.36, 1), opacity 460ms ease;
+}
+
+.coffee-scene.is-ready .coffee-holder-wrap {
+  opacity: 1;
+}
+
+.coffee-scene.is-seated .coffee-holder-wrap {
+  top: var(--scene-holder-seat-top);
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.coffee-holder {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 22px 34px rgba(20, 25, 23, 0.2));
+}
+
+.coffee-engraving {
+  position: absolute;
+  left: 13%;
+  right: 13%;
+  top: 35%;
+  z-index: 5;
+  display: grid;
+  gap: 5px;
+  text-align: center;
+  color: rgba(70, 55, 34, 0.52);
+  mix-blend-mode: multiply;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.2), 0 -1px 0 rgba(48, 36, 20, 0.16);
+}
+
+.coffee-engraving strong,
+.coffee-engraving span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.coffee-engraving strong {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.4rem;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.coffee-engraving span {
+  font-size: 0.76rem;
+  line-height: 1.28;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.coffee-scene.is-finished .coffee-cup {
+  top: var(--scene-cup-seat-top);
+  transform: translate(-50%, -50%) scale(9);
+  opacity: 1;
+  transition: transform 1250ms cubic-bezier(0.7, 0, 0.84, 0), top 1250ms ease;
+}
+
+.coffee-scene.is-finished .coffee-holder-wrap {
+  transform: translate(-50%, -50%) scale(9);
+  opacity: 1;
+  transition: transform 1250ms cubic-bezier(0.7, 0, 0.84, 0);
 }
 
 @media (max-width: 900px) {
@@ -434,13 +653,36 @@ body {
   }
 
   .cup-actions {
-    gap: 6px;
+    gap: 5px;
   }
 
   .cup-link {
-    min-height: 28px;
-    padding: 5px 5px;
+    min-height: 24px;
+    padding: 4px 4px;
     font-size: 0.62rem;
+  }
+}
+
+@media (max-width: 700px) {
+  .coffee-stage {
+    --scene-cup-width: clamp(148px, 23svh, 198px);
+    --scene-machine-width: clamp(300px, 46svh, 410px);
+  }
+
+  .coffee-stream-mask {
+    height: calc(var(--scene-stream-bottom) - var(--scene-stream-top));
+  }
+
+  .coffee-engraving {
+    gap: 3px;
+  }
+
+  .coffee-engraving strong {
+    font-size: 1rem;
+  }
+
+  .coffee-engraving span {
+    font-size: 0.58rem;
   }
 }
 
@@ -507,17 +749,17 @@ body {
   }
 
   .cup-actions {
-    gap: 4px;
+    gap: 3px;
   }
 
   .cup-card.is-expanded .cup-actions {
-    padding: 0 6px 6px;
+    padding: 0 6px 4px;
   }
 
   .cup-link {
-    min-height: 20px;
-    padding: 2px 2px;
+    min-height: 16px;
+    padding: 1px 2px;
     border-radius: 6px;
-    font-size: 0.42rem;
+    font-size: 0.38rem;
   }
 }
