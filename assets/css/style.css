@@ -622,6 +622,7 @@ body {
   font-size: 0.76rem;
   line-height: 1.28;
   display: -webkit-box;
+  line-clamp: 2;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
@@ -858,6 +859,7 @@ body {
   .cup-summary span {
     font-size: 0.52rem;
     line-height: 1.16;
+    line-clamp: 1;
     -webkit-line-clamp: 1;
   }
 
